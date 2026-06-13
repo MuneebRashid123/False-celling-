@@ -1,4 +1,4 @@
-// ========== AUTO SLIDER FOR HERO ==========
+// ========== HERO SLIDER (faster 2.5s interval + smooth) ==========
 const slides = document.querySelectorAll('.hero-slider .slide');
 let currentSlide = 0;
 let slideInterval;
@@ -19,14 +19,18 @@ function showSlide(index) {
   currentSlide = index;
 }
 
-function nextSlide() { showSlide((currentSlide + 1) % totalSlides); }
-function prevSlide() { showSlide((currentSlide - 1 + totalSlides) % totalSlides); }
+function nextSlide() {
+  showSlide((currentSlide + 1) % totalSlides);
+}
+function prevSlide() {
+  showSlide((currentSlide - 1 + totalSlides) % totalSlides);
+}
 
 function startAutoSlide() {
   if (slideInterval) clearInterval(slideInterval);
   slideInterval = setInterval(() => {
     if (autoSlideActive) nextSlide();
-  }, 5000);
+  }, 2500); // Reduced to 2.5s for faster change
 }
 
 function resetAutoSlide() {
@@ -58,24 +62,27 @@ if (nextBtn) nextBtn.addEventListener('click', () => { autoSlideActive = true; r
 
 // Pause on hover
 const heroSection = document.querySelector('.hero');
-heroSection.addEventListener('mouseenter', () => { autoSlideActive = false; clearInterval(slideInterval); });
-heroSection.addEventListener('mouseleave', () => { autoSlideActive = true; startAutoSlide(); });
+if (heroSection) {
+  heroSection.addEventListener('mouseenter', () => { autoSlideActive = false; clearInterval(slideInterval); });
+  heroSection.addEventListener('mouseleave', () => { autoSlideActive = true; startAutoSlide(); });
+}
 
 showSlide(0);
 startAutoSlide();
 
-// ========== GALLERY & LIGHTBOX ==========
+// ========== GALLERY DATA & LIGHTBOX ==========
 const galleryImages = [
-  { src: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=700&auto=format", cat: "Luxury POP Design" },
-  { src: "https://images.unsplash.com/photo-1616486338812-3badae4b4ace?w=700&auto=format", cat: "Modern Gypsum Ceiling" },
-  { src: "https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=700&auto=format", cat: "Office LED Integration" },
-  { src: "https://images.unsplash.com/photo-1600210491369-e753d80a41f3?w=700&auto=format", cat: "Residential 3D Ceiling" },
-  { src: "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=700&auto=format", cat: "Contemporary Villa" },
-  { src: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=700&auto=format", cat: "Layered POP + Light" }
+  { src: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format", cat: "Luxury POP Design" },
+  { src: "https://images.unsplash.com/photo-1616486338812-3badae4b4ace?w=800&auto=format", cat: "Modern Gypsum Ceiling" },
+  { src: "https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=800&auto=format", cat: "Office LED Integration" },
+  { src: "https://images.unsplash.com/photo-1600210491369-e753d80a41f3?w=800&auto=format", cat: "Residential 3D Ceiling" },
+  { src: "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=800&auto=format", cat: "Contemporary Villa" },
+  { src: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&auto=format", cat: "Layered POP + Light" }
 ];
 let currentLightboxIndex = 0;
 const galleryContainer = document.getElementById('galleryGrid');
 function buildGallery() {
+  if (!galleryContainer) return;
   galleryContainer.innerHTML = '';
   galleryImages.forEach((img, idx) => {
     const div = document.createElement('div');
@@ -92,60 +99,81 @@ const lightboxImg = document.getElementById('lightboxImg');
 const closeLb = document.querySelector('.close-lightbox');
 const prevLb = document.querySelector('.prev-arrow');
 const nextLb = document.querySelector('.next-arrow');
-function openLightbox(index) { currentLightboxIndex = index; updateLightboxImage(); lightbox.classList.add('active'); document.body.style.overflow = 'hidden'; }
-function updateLightboxImage() { lightboxImg.src = galleryImages[currentLightboxIndex].src; lightboxImg.alt = galleryImages[currentLightboxIndex].cat; }
-function nextImage() { currentLightboxIndex = (currentLightboxIndex + 1) % galleryImages.length; updateLightboxImage(); }
-function prevImage() { currentLightboxIndex = (currentLightboxIndex - 1 + galleryImages.length) % galleryImages.length; updateLightboxImage(); }
-function closeLightboxFn() { lightbox.classList.remove('active'); document.body.style.overflow = ''; }
-closeLb.addEventListener('click', closeLightboxFn);
-prevLb.addEventListener('click', (e) => { e.stopPropagation(); prevImage(); });
-nextLb.addEventListener('click', (e) => { e.stopPropagation(); nextImage(); });
-lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightboxFn(); });
-document.addEventListener('keydown', (e) => { if (!lightbox.classList.contains('active')) return; if (e.key === 'Escape') closeLightboxFn(); if (e.key === 'ArrowLeft') prevImage(); if (e.key === 'ArrowRight') nextImage(); });
 
-// ========== IMPROVED MOBILE MENU ==========
+function openLightbox(index) {
+  if (!lightbox) return;
+  currentLightboxIndex = index;
+  lightboxImg.src = galleryImages[currentLightboxIndex].src;
+  lightbox.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function nextImage() {
+  currentLightboxIndex = (currentLightboxIndex + 1) % galleryImages.length;
+  lightboxImg.src = galleryImages[currentLightboxIndex].src;
+}
+function prevImage() {
+  currentLightboxIndex = (currentLightboxIndex - 1 + galleryImages.length) % galleryImages.length;
+  lightboxImg.src = galleryImages[currentLightboxIndex].src;
+}
+function closeLightbox() {
+  if (lightbox) lightbox.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+if (closeLb) closeLb.addEventListener('click', closeLightbox);
+if (prevLb) prevLb.addEventListener('click', (e) => { e.stopPropagation(); prevImage(); });
+if (nextLb) nextLb.addEventListener('click', (e) => { e.stopPropagation(); nextImage(); });
+if (lightbox) lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+document.addEventListener('keydown', (e) => {
+  if (!lightbox || !lightbox.classList.contains('active')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') prevImage();
+  if (e.key === 'ArrowRight') nextImage();
+});
+
+// ========== MOBILE MENU (keeps WhatsApp & arrows functional) ==========
 const menuToggle = document.getElementById('menuToggle');
 const navLinks = document.getElementById('navLinks');
 const menuOverlay = document.getElementById('menuOverlay');
+const closeSideBtn = document.getElementById('closeSideMenu');
 
 function closeMenu() {
-  navLinks.classList.remove('active');
+  if (navLinks) navLinks.classList.remove('active');
   if (menuOverlay) menuOverlay.classList.remove('active');
   document.body.classList.remove('menu-open');
+  document.body.style.overflow = '';
 }
-
 function openMenu() {
-  navLinks.classList.add('active');
+  if (navLinks) navLinks.classList.add('active');
   if (menuOverlay) menuOverlay.classList.add('active');
   document.body.classList.add('menu-open');
+  document.body.style.overflow = 'hidden';
 }
 
 if (menuToggle) {
   menuToggle.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (navLinks.classList.contains('active')) {
+    if (navLinks && navLinks.classList.contains('active')) {
       closeMenu();
     } else {
       openMenu();
     }
   });
 }
-
-if (menuOverlay) {
-  menuOverlay.addEventListener('click', closeMenu);
-}
+if (menuOverlay) menuOverlay.addEventListener('click', closeMenu);
+if (closeSideBtn) closeSideBtn.addEventListener('click', closeMenu);
 
 document.querySelectorAll('.nav-links a').forEach(link => {
   link.addEventListener('click', closeMenu);
 });
 
 window.addEventListener('resize', () => {
-  if (window.innerWidth > 920 && navLinks.classList.contains('active')) {
+  if (window.innerWidth > 920 && navLinks && navLinks.classList.contains('active')) {
     closeMenu();
   }
 });
 
-// ========== SMOOTH SCROLL (offset for fixed header) ==========
+// ========== SMOOTH SCROLL WITH OFFSET ==========
 const offset = 80;
 document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach(anchor => {
   anchor.addEventListener('click', function(e) {
@@ -154,13 +182,12 @@ document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach(anchor => {
     const target = document.querySelector(targetId);
     if (target) {
       e.preventDefault();
-      const y = target.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      window.scrollTo({ top: target.offsetTop - offset, behavior: 'smooth' });
     }
   });
 });
 
-// ========== CONTACT FORM ==========
+// ========== CONTACT FORM HANDLER ==========
 const contactForm = document.getElementById('contactForm');
 if (contactForm) {
   contactForm.addEventListener('submit', (e) => {
@@ -177,15 +204,20 @@ if (contactForm) {
   });
 }
 
-// ========== BACK TO TOP ==========
+// ========== BACK TO TOP BUTTON ==========
 const backTop = document.getElementById('backToTop');
 window.addEventListener('scroll', () => {
-  if (window.scrollY > 500) backTop.classList.add('show');
-  else backTop.classList.remove('show');
+  if (window.scrollY > 500) {
+    backTop.classList.add('show');
+  } else {
+    backTop.classList.remove('show');
+  }
 });
-backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+if (backTop) {
+  backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+}
 
-// ========== ACTIVE NAVIGATION ON SCROLL ==========
+// ========== ACTIVE NAVIGATION HIGHLIGHT ==========
 const sections = document.querySelectorAll("section");
 const navItems = document.querySelectorAll(".nav-links a");
 window.addEventListener("scroll", () => {
